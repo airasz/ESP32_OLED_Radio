@@ -1,6 +1,6 @@
 
 
-//=== bring onother part ino file here ====//
+//=== bring another part ino file here ====//
 #include "inputcontrol.h"
 #include "localmp3.h"
 #include "module.h"
@@ -23,30 +23,29 @@ void dynamicinfo(){
     if(tmrinfo>10){
       if(networkinfo==true){
         oledshow(0,"Wlan0 : "+WiFi.SSID() );
+        if(isplaying){oledshow(2,radioinfo);}
+        
         networkinfo=false;
       }else{
         oledshow(0,"IP    : "+WiFi.localIP().toString());
+        
+        if(isplaying){oledshow(2,radioinfo2);}
         networkinfo=true;
+      }
+      if(isplaying){
+      
+      } else {
+      // statement
       }
 
       // gettime() ;  
 
       // oledshow(3,timetxt);                                   // Yes, get the current time
       if((WiFi.localIP().toString())=="0.0.0.0"){
-        oledshow(0, "ESP32 Webadio");
+        oledshow(0, "ESP32 WebRadio");
         oledshow(3,"connection down!");
       }else{
         oledshow(3,"");
-        // if(networkinfo==true){
-        //   oledshow(3,"");
-        // }else{
-        //   if(tmode==0){
-        //     oledshow(3,"touchmode = volume");
-        //   }else{oledshow(3,"touchmode = preset");}
-        // }
-
-
-
       }
       //displaytime ( timetxt ) ; 
       tmrinfo=0;
@@ -275,28 +274,24 @@ void tftlog ( const char *str )
       // dsp_setRotation() ;                                // Use landscape format
       // dsp_erase() ;                                      // Clear screen
       if(logingline<3){
-       
-      dsp_setTextSize ( 1 ) ;                            // Small character font
-      dsp_setTextColor ( WHITE ) ;                       // Info in white
-      dsp_setCursor ( 0, 16 ) ; 
-     // strlog=strlog+str;
-    dsp_println ( str ) ;                              // Yes, show error on TFT
-
-    dsp_update() ;                                     // To physical screen   
+        dsp_setTextSize ( 1 ) ;                            // Small character font
+        dsp_setTextColor ( WHITE ) ;                       // Info in white
+        dsp_setCursor ( 0, 16 ) ; 
+        // strlog=strlog+str;
+        dsp_println ( str ) ;                              // Yes, show error on TFT
+        dsp_update() ;                                     // To physical screen   
       }
       if(logingline==4){
-          
-      dsp_setTextSize ( 1 ) ;                            // Small character font
-      dsp_setTextColor ( WHITE ) ;                       // Info in white
-      dsp_setCursor ( 0, 16 ) ; 
-     // strlog=strlog+str;
-    dsp_print ( str ) ;                              // Yes, show error on TFT
-
-    dsp_update() ;                                     // To physical screen
+        dsp_setTextSize ( 1 ) ;                            // Small character font
+        dsp_setTextColor ( WHITE ) ;                       // Info in white
+        dsp_setCursor ( 0, 16 ) ; 
+        // strlog=strlog+str;
+        dsp_print ( str ) ;                              // Yes, show error on TFT
+        dsp_update() ;                                     // To physical screen
       }
       if(logingline>3){
-        // dsp_fillRect ( 0, 16,                             // clear sector 0,12,128,24 for new text
-        // dsp_getwidth(), 48-16, BLACK ) ;    
+        dsp_fillRect ( 0, 16,                             // clear sector 0,12,128,24 for new text
+        dsp_getwidth(), 48-16, BLACK ) ;    
         logingline=0;  
       }
       //                    dsp_update();
