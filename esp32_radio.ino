@@ -1,20 +1,13 @@
-//***************************************************************************************************
+//*******************************
+//  - nvsacbug library and integrated in this sketch.
+//
+// See http://www.internet-radio.com for suitable stations.  Add the stations of your choice
+// to the preferences in either Esp32_rad********************************************************************
 //*  ESP32_Radio -- Webradio receiver for ESP32, 1.8 color display and VS1053 MP3 module.           *
 //*                 By Ed Smallenburg.                                                              *
 //***************************************************************************************************
 // ESP32 libraries used:
-//  - WiFiMulti
-//  - nvs
-//  - Adafruit_ST7735
-//  - ArduinoOTA
-//  - PubSubClientenc_dt_pin
-//  - SD
-//  - FS
-// A library for the VS1053 (for ESP32) is not available (or not easy to find).  Therefore
-// a class for this module is derived from the maniacbug library and integrated in this sketch.
-//
-// See http://www.internet-radio.com for suitable stations.  Add the stations of your choice
-// to the preferences in either Esp32_radio_init.ino sketch or through the webinterface.
+//  - WiFiMultiio_init.ino sketch or through the webinterface.
 //
 // Brief description of the program:
 // First a suitable WiFi network is found and a connection is made.
@@ -24,6 +17,13 @@
 //  icy-genre:Classic Rock 60s 70s 80s Oldies Miami South Florida
 //  icy-url:http://www.ClassicRockFLorida.com
 //  content-type:audio/mpeg
+//  - Adafruit_ST7735
+//  - ArduinoOTA
+//  - PubSubClientenc_dt_pin
+//  - SD
+//  - FS
+// A library for the VS1053 (for ESP32) is not available (or not easy to find).  Therefore
+// a class for this module is derived from the mani
 //  icy-pub:1
 //  icy-metaint:32768          - Metadata after 32768 bytes of MP3-data
 //  icy-br:128                 - in kb/sec (for Ogg this is like "icy-br=Quality 2"
@@ -130,8 +130,8 @@
 #define VERSION "Sun, 10 June 2018 18:30:00 GMT"
 //
 // Define type of display.  See documentation.
-//#define BLUETFT                        // Works also for RED TFT 128x160
-#define OLED                         // 64x128 I2C OLED
+#define BLUETFT                        // Works also for RED TFT 128x160
+//#define OLED                         // 64x128 I2C OLED
 //#define DUMMYTFT                     // Dummy display
  //#define LCD1602I2C                   // LCD 1602 display with I2C backpack
 //
@@ -410,8 +410,10 @@ int curvsvol;
 long sleepvalsec=0;
 long sleepvalmin=0;
 bool sleepalarm=false;
-
+bool tolocalap=false;
+bool isplaying=false;
 int tmrinfo=0;
+int numOfPreset=0;
 
 int tc2, tc3, tc4, tc5, tc6,prevtc6, prevtc2,prevtc3,prevtc4,prevtc5;
 int tmode=0;
@@ -423,9 +425,10 @@ bool startlisteningtouch=false;
 
 #define touch1 14 //14
 #define touch2 12  //13
-#define touch3 2 //13
+#define touch3 27 //13
 #define touch4 15 //14
-
+#define led_connnected_in 2
+bool flasing_connection=false;
 // Include software for the right display
 #ifdef BLUETFT
 #include "bluetft.h"                                     // For ILI9163C or ST7735S 128x160 display
@@ -1307,11 +1310,11 @@ void listNetworks()
     networks += WiFi.SSID(i) + String ( ", " ) ;        
   }
   dbgprint ( "End of list" ) ;
-    tftsec2log+="\n"+networks;
-    tftlog(tftsec2log.c_str());     
+  tftsec2log+="\n"+networks;
+  tftlog(tftsec2log.c_str());     
 }
 
-
+int countlocalap=8;
 //**************************************************************************************************
 //                                          T I M E R 1 0 S E C                                    *
 //**************************************************************************************************
@@ -1331,7 +1334,7 @@ void IRAM_ATTR timer10sec()
                     PLAYLISTHEADER |
                     PLAYLISTDATA ) )
   {
-    bytesplayed = totalcount - oldtotalcount ;    // Nunber of bytes played in the 10 seconds
+    bytesplayed = totalcount - oldtotalcount ;    // Number of bytes played in the 10 seconds
     oldtotalcount = totalcount ;                  // Save for comparison in next cycle
     if ( bytesplayed == 0 )                       // Still playing?
     {
@@ -1339,7 +1342,7 @@ void IRAM_ATTR timer10sec()
       {
         try
         {          
-          WiFi.disconnect() ;                                   // attempt to disconnect before restart         }
+          WiFi.disconnect() ;                     // attempt to disconnect before restart         }
         }catch(int e){
           
         }
@@ -1355,6 +1358,7 @@ void IRAM_ATTR timer10sec()
            ( playlist_num > 0 ) )                 // Or playlist active?
       {
         oledshow(2, "Unable to play!\nTry to play next station....");
+        isplaying=false;
         datamode = STOPREQD ;                     // Stop player
         ini_block.newpreset++ ;                   // Yes, try next channel
       }
@@ -1368,6 +1372,21 @@ void IRAM_ATTR timer10sec()
       morethanonce = 0 ;                          // Data seen, reset failcounter
     }
   }
+  if(tolocalap==true){
+    countlocalap--;
+    String counts;
+    counts = "Timeout : ";
+    counts+=String(countlocalap);
+    oledshow(3, counts);
+    dbgprint ("countlocalap is counting" ) ;  
+    if(countlocalap<1){
+      {
+        ESP.restart();
+      }
+    }
+  }
+
+
 }
 
 // int tc2, tc3, tc4, tc5, tc6,prevtc6, prevtc2,prevtc3,prevtc4,prevtc5;
@@ -1380,182 +1399,42 @@ void IRAM_ATTR timer10sec()
 
 
 
-//==========handle touchcontrol
-//function for touch_listener
-void touch_listener(){                    
-    
-   if(startlisteningtouch==1){
-      tc4=touchRead(T4); //vol++
-      tc5=touchRead(T5);  //vol--ini_block.newpreset
-      tc6=touchRead(T3);  //pre--
-      tc2=touchRead(T9); //pre++
-   }
-
-
-   // dbgprint(("   "+String(tc2)).c_str());
-
-     // dbgprint(String(tc4).c_str());
-
-
-// if(tc6>78){
-
-
-//   if(prevtc6<65&&prevtc6>0){
-        
-//       if(tmode==0){tmode=1;oledshow ( 3, "touchmode : preset");
-//         tmppreset=currentpreset;
-//       }else{tmode=0;oledshow ( 3, "touchmode : volume");}  
-      
-//       dbgprint(("   "+String(tc6)).c_str());
-//       dbgprint(String(tc6).c_str());   
-//       tlrate=5;
-//   }
-// }else{tlrate=1;}
-
-// prevtc6=tc6;
-
-
-
-
-//adjust ++ 
-//===touch4==GPIO12
-if(tc4<75){
-
-
-  if(prevtc4<75&&prevtc4>50){
-        
-         // curvsvol = vs1053player->getVolume() ;    
-         //  curvsvol+=2;
-         //  if((curvsvol+2)>90){curvsvol=90;}
-          ini_block.reqvol +=2;
-          if(ini_block.reqvol>100){ini_block.reqvol=100;}
-          // muteflag = false ;
-        // oledshow(3, "     " +String(tc4));    
-          oledshow ( 3, "Volume is now : "+ String(ini_block.reqvol))  ;
-          // oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-          // dbgprint(   (("TC5 = "+String(tc5)).c_str())   +(("TC4 = "+String(tc4)).c_str()));
-          // dbgprint(("             TC4   "+String(tc4)).c_str());
-          // dbgprint(String(tc5).c_str());   
-          tlrate=5;
-
-      
-      tmrinfo=0;
-      // dbgprint(("tlrate =  "+String(tlrate)).c_str());
-
-      
-  }
-// }else{ if(tmode==0) {tlrate=1;}else {tlrate=5}}
-}else{ tlrate=1;}
-prevtc4=tc4;
-
-
-
-//adjust--
-//===touch5==GPIO12
-if(tc5<80){
-  if(prevtc5<80&&prevtc5>20){
-
-
-        curvsvol = vs1053player->getVolume() ;    
-        // curvsvol-=2;
-        // if((curvsvol-2)<50){curvsvol=50;}
-        ini_block.reqvol -=2;
-
-          if(ini_block.reqvol<50){ini_block.reqvol=50;}
-        muteflag = false ;
-      // oledshow(3, String(tc5));    
-        oledshow ( 3, "Volume is now : "+String(ini_block.reqvol))  ;
-        // oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-        //   dbgprint(   ("TC4 = "+String(tc4)).c_str());
-        // dbgprint(String(tc5).c_str());
-        tlrate=5;
-
-
-      tmrinfo=0;
-      // dbgprint(("tlrate =  "+String(tlrate)).c_str());
-  }
-}else{tlrate=1;}
-prevtc5=tc5;
-
-//adjust preset--
-//===touch5==GPIO12
-if(tc6<78){
-  if(prevtc6<78&&prevtc6>20){
-
-       // datamode = STOPREQD ; 
-        ini_block.newpreset--;
-        if (ini_block.newpreset<=(-1)){ini_block.newpreset=16;}
-        // tmppreset-=1;
-        // if(tmppreset<0){tmppreset=17;}
-        // currentpreset=ini_block.newpreset;
-
-        oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
-        // oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-        tlrate=5;
-        tmrinfo=0;
-      // dbgprint(("tlrate =  "+String(tlrate)).c_str());
-  }
-}else{tlrate=1;}
-prevtc6=tc6;
-
-
-
-//adjust-++
-//===touch5==GPIO12
-if(tc2<77){
-  if(prevtc2<77&&prevtc2>20){
-
-
-       // datamode = STOPREQD ; 
-        ini_block.newpreset++;
-        if(ini_block.newpreset>18){ini_block.newpreset=18;}
-        // tmppreset-=1;
-        // if(tmppreset<0){tmppreset=17;}
-        // currentpreset=ini_block.newpreset;
-
-        oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
-        // oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-        tlrate=5;
-
-      
-
-      tmrinfo=0;
-      dbgprint(("tlrate =  "+String(tlrate)).c_str());
-  }
-}else{tlrate=1;}
-prevtc2=tc2;
-
-}   
-
-
-
 
 void touchs_listener(){
   if(digitalRead(touch1)==1){
-      ini_block.reqvol -=2;
-      if(ini_block.reqvol<50){ini_block.reqvol=50;}
-      oledshow ( 3, "Volume is now : "+ String(ini_block.reqvol))  ;
-      tlrate=3;
-      tmrinfo=0;
+      if(tolocalap){                                      //extra function to avoid timeout apmode
+        tolocalap=false;
+        oledshow(3,"Timeout dismissed!");
+      }else{
+        ini_block.reqvol -=2;
+        if(ini_block.reqvol<50){ini_block.reqvol=50;}
+        oledshow ( 3, "Volume is now : "+ String(ini_block.reqvol))  ;
+        tlrate=3;
+        tmrinfo=0;
+      }
   }else{tlrate=1;}
   if(digitalRead(touch2)==1){
-      ini_block.reqvol +=2;
-      if(ini_block.reqvol>100){ini_block.reqvol=100;}
-      oledshow ( 3, "Volume is now : "+ String(ini_block.reqvol))  ;
-      tlrate=3;
-      tmrinfo=0;
+      if(tolocalap){
+        ESP.restart();
+      }else{
+        ini_block.reqvol +=2;
+        if(ini_block.reqvol>100){ini_block.reqvol=100;}
+        oledshow ( 3, "Volume is now : "+ String(ini_block.reqvol))  ;
+        tlrate=3;
+        tmrinfo=0;
+      }
     
   }else{tlrate=1;}
   if(digitalRead(touch3)==1){
     ini_block.newpreset--;
-        if (ini_block.newpreset<=(-1)){ini_block.newpreset=16;}
+        if (ini_block.newpreset<=(-1)){ini_block.newpreset=numOfPreset;}
         oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
         tlrate=3;
         tmrinfo=0;
   }else{tlrate=1;}
   if(digitalRead(touch4)==1){
         ini_block.newpreset++;
-        if(ini_block.newpreset>18){ini_block.newpreset=18;}
+        if(ini_block.newpreset>numOfPreset){ini_block.newpreset=0;}
         oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
         tlrate=3;
       tmrinfo=0; 
@@ -1814,20 +1693,22 @@ void showstreamtitle ( const char *ml, bool full )
           // the content of the HTTP response follows the header:
           // cmdclient.println ( "Dummy response\n" ) ;        // Text ending with double newline
     cmdclient.print("test send");
-  if(radioinfo!=oldradioinfo){
-    if(cmdclient.connected()){
 
-          httpheader ( String ( "text/html" ) ) ;           // Send header
-          // the content of the HTTP response follows the header:
-          // cmdclient.println ( "Dummy response\n" ) ;        // Text ending with double newline
-      // cmdclient.print(radioinfo);
+    //====not work====
+  // if(radioinfo!=oldradioinfo){
+  //   if(cmdclient.connected()){
 
-        reply = analyzeCmd ( "status" ) ;             // Analyze command and handle it
-        dbgprint ( reply ) ;                     // Result for debugging
-      oldradioinfo=radioinfo;
-    }
+  //         httpheader ( String ( "text/html" ) ) ;           // Send header
+  //         // the content of the HTTP response follows the header:
+  //         // cmdclient.println ( "Dummy response\n" ) ;        // Text ending with double newline
+  //     // cmdclient.print(radioinfo);
 
-  }
+  //       reply = analyzeCmd ( "status" ) ;             // Analyze command and handle it
+  //       dbgprint ( reply ) ;                     // Result for debugging
+  //     oldradioinfo=radioinfo;
+  //   }
+
+  // }
  //  tftset ( 1, streamtitle ) ;                   // Set screen segment text middle part
 }
 
@@ -2001,17 +1882,25 @@ bool connectwifi()
     if (  WiFi.waitForConnectResult() != WL_CONNECTED ) // Try to connect
     {
       localAP = true ;                                  // Error, setup own AP
+      tolocalap=true;
+
+    dbgprint ("tolocalap=true" ) ;  
     }
   }
   else
   {
     localAP = true ;                                    // Not even a single AP defined
+    tolocalap=true;
+
+    dbgprint ("tolocalap=true" ) ;  
   }
   if ( localAP )                                        // Must setup local AP?
   {
     dbgprint ( "WiFi Failed!  Trying to setup AP with name %s and password %s.", NAME, NAME ) ;
     WiFi.softAP ( NAME, NAME ) ;                        // This ESP will be an AP
     pfs = dbgprint ( "IP = 192.168.4.1" ) ;             // Address for AP
+    oledshow(1,"Station mode");
+    oledshow(2, "IP = 192.168.4.1\npass = ESP32Radio\nvoldown to avoid timeout\nvolup to force restart");
   }
   else
   {
@@ -2472,190 +2361,191 @@ void  scandigital()
   }
   scanios++ ;                                               // TEST*TEST*TEST
   oldmillis = millis() ;                                    // 100 msec over
-  // for ( i = 0 ; ( pinnr = progpin[i].gpio ) >= 0 ; i++ )    // Scan all inputs
-  // {
-  //   if ( !progpin[i].avail || progpin[i].reserved )         // Skip unused and reserved pins
-  //   {
-  //     continue ;
-  //   }
-  //   level = ( digitalRead ( pinnr ) == HIGH ) ;             // Sample the pin
-  //   if ( level != progpin[i].cur )                          // Change seen?
-  //   {
-  //     progpin[i].cur = level ;                              // And the new level
-  //     if ( !level )                                         // HIGH to LOW change?
-  //     {
-  //       dbgprint ( "GPIO_%02d is now LOW, execute %s",
-  //                  pinnr, progpin[i].command.c_str() ) ;
-  //       reply = analyzeCmd ( progpin[i].command.c_str() ) ; // Analyze command and handle it
-  //       dbgprint ( reply ) ;                                // Result for debugging
-  //     }
-  //   }
-  // }
-  // // Now for the touch pins
-  // for ( i = 0 ; ( pinnr = touchpin[i].gpio ) >= 0 ; i++ )   // Scan all inputs
-  // {
-  //   if ( !touchpin[i].avail || touchpin[i].reserved )       // Skip unused and reserved pins
-  //   {
-  //     continue ;
-  //   }
-  //   tlevel = ( touchRead ( pinnr ) ) ;                      // Sample the pin
-  //   oledshow(2, String(tlevel));
-  //   dbgprint(String(tlevel).c_str());
-  //   level = ( tlevel >= 30 ) ;                              // True if below threshold
-  //   dbgprint(" touch level = " + tlevel);
-  //   if ( level )                                            // Level HIGH?
-  //   {
-  //     touchpin[i].count = 0 ;                               // Reset count number of times
-  //   }
-  //   else
-  //   {
-  //     if ( ++touchpin[i].count < 3 )                        // Count number of times LOW
-  //     {
-  //       level = true ;                                      // Not long enough: handle as HIGH
-  //     }
-  //   }
-  //   if ( level != touchpin[i].cur )                         // Change seen?
-  //   {
-  //     touchpin[i].cur = level ;                             // And the new level
-  //     if ( !level )                                         // HIGH to LOW change?
-  //     {
-  //       dbgprint ( "TOUCH_%02d is now %d ( < %d ), execute %s",
-  //                  pinnr, tlevel, THRESHOLD,
-  //                  touchpin[i].command.c_str() ) ;
-  //       reply = analyzeCmd ( touchpin[i].command.c_str() ); // Analyze command and handle it
-  //       dbgprint ( reply ) ;                                // Result for debugging
-  //     }
-  //   }
-  // }
+  /**
+  for ( i = 0 ; ( pinnr = progpin[i].gpio ) >= 0 ; i++ )    // Scan all inputs
+  {
+    if ( !progpin[i].avail || progpin[i].reserved )         // Skip unused and reserved pins
+    {
+      continue ;
+    }
+    level = ( digitalRead ( pinnr ) == HIGH ) ;             // Sample the pin
+    if ( level != progpin[i].cur )                          // Change seen?
+    {
+      progpin[i].cur = level ;                              // And the new level
+      if ( !level )                                         // HIGH to LOW change?
+      {
+        dbgprint ( "GPIO_%02d is now LOW, execute %s",
+                   pinnr, progpin[i].command.c_str() ) ;
+        reply = analyzeCmd ( progpin[i].command.c_str() ) ; // Analyze command and handle it
+        dbgprint ( reply ) ;                                // Result for debugging
+      }
+    }
+  }
+  // Now for the touch pins
+  for ( i = 0 ; ( pinnr = touchpin[i].gpio ) >= 0 ; i++ )   // Scan all inputs
+  {
+    if ( !touchpin[i].avail || touchpin[i].reserved )       // Skip unused and reserved pins
+    {
+      continue ;
+    }
+    tlevel = ( touchRead ( pinnr ) ) ;                      // Sample the pin
+    oledshow(2, String(tlevel));
+    dbgprint(String(tlevel).c_str());
+    level = ( tlevel >= 30 ) ;                              // True if below threshold
+    dbgprint(" touch level = " + tlevel);
+    if ( level )                                            // Level HIGH?
+    {
+      touchpin[i].count = 0 ;                               // Reset count number of times
+    }
+    else
+    {
+      if ( ++touchpin[i].count < 3 )                        // Count number of times LOW
+      {
+        level = true ;                                      // Not long enough: handle as HIGH
+      }
+    }
+    if ( level != touchpin[i].cur )                         // Change seen?
+    {
+      touchpin[i].cur = level ;                             // And the new level
+      if ( !level )                                         // HIGH to LOW change?
+      {
+        dbgprint ( "TOUCH_%02d is now %d ( < %d ), execute %s",
+                   pinnr, tlevel, THRESHOLD,
+                   touchpin[i].command.c_str() ) ;
+        reply = analyzeCmd ( touchpin[i].command.c_str() ); // Analyze command and handle it
+        dbgprint ( reply ) ;                                // Result for debugging
+      }
+    }
+  }
 touch_listener();
-
+**/
 }
 
 
 
-
-// //==========handle touchcontrol
-// //function for touch_listener
-// void touch_listener(){                    
+/**
+//==========handle touchcontrol
+//function for touch_listener
+void touch_listener(){                    
     
-//    if(startlisteningtouch==1){
-//       tc4=touchRead(T4);
-//       tc5=touchRead(T5);   
-//       tc6=touchRead(T3);
-//       // tc2=touchRead(T2);
-//    }
+   if(startlisteningtouch==1){
+      tc4=touchRead(T4);
+      tc5=touchRead(T5);   
+      tc6=touchRead(T3);
+      // tc2=touchRead(T2);
+   }
 
 
-//   // dbgprint(("   "+String(tc6)).c_str());
+  // dbgprint(("   "+String(tc6)).c_str());
 
-//     // dbgprint(String(tc2).c_str());
-
-
-// if(tc6>78){
+    // dbgprint(String(tc2).c_str());
 
 
-//   if(prevtc6<65&&prevtc6>0){
+if(tc6>78){
+
+
+  if(prevtc6<65&&prevtc6>0){
         
-//       if(tmode==0){tmode=1;oledshow ( 3, "touchmode : preset");
-//         tmppreset=currentpreset;
-//       }else{tmode=0;oledshow ( 3, "touchmode : volume");}  
+      if(tmode==0){tmode=1;oledshow ( 3, "touchmode : preset");
+        tmppreset=currentpreset;
+      }else{tmode=0;oledshow ( 3, "touchmode : volume");}  
       
-//       dbgprint(("   "+String(tc6)).c_str());
-//       dbgprint(String(tc6).c_str());   
-//       tlrate=5;
-//   }
-// }else{tlrate=1;}
+      dbgprint(("   "+String(tc6)).c_str());
+      dbgprint(String(tc6).c_str());   
+      tlrate=5;
+  }
+}else{tlrate=1;}
 
-// prevtc6=tc6;
-
-
+prevtc6=tc6;
 
 
-// //adjust ++ 
-// //===touch4==GPIO12
-// if(tc4<75){
 
 
-//   if(prevtc4<75&&prevtc4>0){
+//adjust ++ 
+//===touch4==GPIO12
+if(tc4<75){
+
+
+  if(prevtc4<75&&prevtc4>0){
         
-//       if(tmode==0){
-//           curvsvol = vs1053player->getVolume() ;    
-//           curvsvol+=2;
-//           if((curvsvol+2)>90){curvsvol=90;}
-//           ini_block.reqvol =curvsvol;
-//           muteflag = false ;
-//         // oledshow(3, "     " +String(tc4));    
-//           oledshow ( 3, "Volume is now : "+ String(curvsvol))  ;
-//           oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-//           // dbgprint(   (("TC5 = "+String(tc5)).c_str())   +(("TC4 = "+String(tc4)).c_str()));
-//           dbgprint(("             TC4   "+String(tc4)).c_str());
-//           dbgprint(String(tc5).c_str());   
-//           tlrate=5;
+      if(tmode==0){
+          curvsvol = vs1053player->getVolume() ;    
+          curvsvol+=2;
+          if((curvsvol+2)>90){curvsvol=90;}
+          ini_block.reqvol =curvsvol;
+          muteflag = false ;
+        // oledshow(3, "     " +String(tc4));    
+          oledshow ( 3, "Volume is now : "+ String(curvsvol))  ;
+          oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
+          // dbgprint(   (("TC5 = "+String(tc5)).c_str())   +(("TC4 = "+String(tc4)).c_str()));
+          dbgprint(("             TC4   "+String(tc4)).c_str());
+          dbgprint(String(tc5).c_str());   
+          tlrate=5;
 
-//       }else{
-//         // datamode = STOPREQD ; 
-//         ini_block.newpreset++;
-//         tmppreset+=1;
-//         if(tmppreset>17){tmppreset=0;}
-//         currentpreset=ini_block.newpreset;
-//         oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
-//         // oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-//         tlrate=5;
+      }else{
+        // datamode = STOPREQD ; 
+        ini_block.newpreset++;
+        tmppreset+=1;
+        if(tmppreset>17){tmppreset=0;}
+        currentpreset=ini_block.newpreset;
+        oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
+        // oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
+        tlrate=5;
 
-//       }
+      }
 
 
-//       tmrinfo=0;
-//       dbgprint(("tlrate =  "+String(tlrate)).c_str());
+      tmrinfo=0;
+      dbgprint(("tlrate =  "+String(tlrate)).c_str());
 
       
-//   }
-// }else{tlrate=1;}
+  }
+}else{tlrate=1;}
 
-// prevtc4=tc4;
-
-
-
-// //adjust--
-// //===touch5==GPIO12
-// if(tc5<80){
-//   if(prevtc5<80&&prevtc5>0){
+prevtc4=tc4;
 
 
-//     if(tmode==0){
-//         curvsvol = vs1053player->getVolume() ;    
-//         curvsvol-=2;
-//         if((curvsvol-2)<50){curvsvol=50;}
-//         ini_block.reqvol =curvsvol;
-//         muteflag = false ;
-//       // oledshow(3, String(tc5));    
-//         oledshow ( 3, "Volume is now : "+String(curvsvol))  ;
-//         oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-//           dbgprint(   ("TC4 = "+String(tc4)).c_str());
-//         dbgprint(String(tc5).c_str());
-//         tlrate=5;
 
-//       }else{
-// //        datamode = STOPREQD ; 
-//         ini_block.newpreset--;
-//         tmppreset-=1;
-//         if(tmppreset<0){tmppreset=17;}
-//         currentpreset=ini_block.newpreset;
+//adjust--
+//===touch5==GPIO12
+if(tc5<80){
+  if(prevtc5<80&&prevtc5>0){
 
-//         oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
-//         oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
-//         tlrate=5;
 
-//       }
+    if(tmode==0){
+        curvsvol = vs1053player->getVolume() ;    
+        curvsvol-=2;
+        if((curvsvol-2)<50){curvsvol=50;}
+        ini_block.reqvol =curvsvol;
+        muteflag = false ;
+      // oledshow(3, String(tc5));    
+        oledshow ( 3, "Volume is now : "+String(curvsvol))  ;
+        oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
+          dbgprint(   ("TC4 = "+String(tc4)).c_str());
+        dbgprint(String(tc5).c_str());
+        tlrate=5;
 
-//       tmrinfo=0;
-//       dbgprint(("tlrate =  "+String(tlrate)).c_str());
-//   }
-// }else{tlrate=1;}
-// prevtc5=tc5;
+      }else{
+//        datamode = STOPREQD ; 
+        ini_block.newpreset--;
+        tmppreset-=1;
+        if(tmppreset<0){tmppreset=17;}
+        currentpreset=ini_block.newpreset;
 
-// }   
+        oledshow ( 3, "Preset is now : "+  String(ini_block.newpreset))  ;
+        oledshow(1, "preset : " +  String(ini_block.newpreset)+" | volume : " +  String(curvsvol));
+        tlrate=5;
 
+      }
+
+      tmrinfo=0;
+      dbgprint(("tlrate =  "+String(tlrate)).c_str());
+  }
+}else{tlrate=1;}
+prevtc5=tc5;
+
+}   
+**/
 
 
 
@@ -2940,7 +2830,6 @@ void setup()
   Serial.begin ( 115200 ) ;                              // For debug
   Serial.println() ;
 
-
   // Version tests for some vital include files
   if ( about_html_version   < 170626 ) dbgprint ( wvn, "about" ) ;
   if ( config_html_version  < 171207 ) dbgprint ( wvn, "config" ) ;
@@ -2992,6 +2881,8 @@ void setup()
   pinMode(touch3, INPUT);
   pinMode(touch4, INPUT);
   pinMode(pinleddummyload, OUTPUT);
+  pinMode(led_connnected_in, OUTPUT);
+  
   // for ( i = 0 ; (pinnr = progpin[i].gpio) >= 0 ; i++ )   // Check programmable input pins
   // {
   //   pinMode ( pinnr, INPUT_PULLUP ) ;                    // Input for control button
@@ -3047,7 +2938,7 @@ void setup()
       dsp_print("initializing...");
       dsp_update() ;                                     // Show on physical screen
 
-    }
+    }   
   }
   if ( ini_block.sd_cs_pin >= 0 )                        // SD configured?
   {
@@ -3107,14 +2998,19 @@ void setup()
   cmdserver.begin() ;                                    // Start http server
   if ( NetworkFound )                                    // OTA and MQTT only if Wifi network found
   {
-    dbgprint ( "Network found. Starting mqtt and OTA" ) ;
+    dbgprint ( "Network found. Starting mqbbhtt and OTA" ) ;
   
-    oledshow(3, "Playing Now" );
+    oledshow(3, "Start playing" );
+    isplaying =true;
+    flasing_connection=true;                                  // tell if connected to network
+    if(flasing_connection){  dbgprint ( "Flashing started!  ") ;  }
+    
     mqtt_on = ( ini_block.mqttbroker.length() > 0 ) &&   // Use MQTT if broker specified
               ( ini_block.mqttbroker != "none" ) ;
     ArduinoOTA.setHostname ( NAME ) ;                    // Set the hostname
     ArduinoOTA.onStart ( otastart ) ;
     ArduinoOTA.begin() ;                                 // Allow update over the air
+
     if ( mqtt_on )                                       // Broker specified?
     {
       if ( ( ini_block.mqttprefix.length() == 0 ) ||     // No prefix?
@@ -3176,6 +3072,7 @@ void setup()
   {
     gettime() ;                                           // Sync time
   }
+  countpreset();
   if ( tft )
   // {
   //   dsp_fillRect ( 0, 8,                                  // Clear most of the screen
@@ -3205,7 +3102,22 @@ void setup()
     1,                                                    // priority of the task
     &xspftask ) ;                                         // Task handle to keep track of created task
 }
+void countpreset (){
+  String tmppresetc;
+  for(int i=0; i<101; i++){
+           tmppresetc=readhostfrompref(i).c_str();       //get station name 
+          tmppresetc+="\n";                              //add next station as newline
+          int in=tmppresetc.indexOf("#");                //get comment sign
+          if(in>0){
 
+            numOfPreset+=1;
+              // tmppresetc=tmppresetc.substring(in);        //get comment only
+          }else{break;}
+        //  allpreset=allpreset+ tmppreset;                //list all station available in one packet string
+      }
+      numOfPreset-=1;
+      dbgprint ( "totalcount preset %d", numOfPreset ) ;
+}
 
 //**************************************************************************************************
 //                                        R I N B Y T                                              *
@@ -4028,6 +3940,7 @@ void mp3loop()
     }
   }
 }
+int prevmil;
 
 
 //**************************************************************************************************
@@ -4043,6 +3956,7 @@ void loop()
     delay ( 1000 ) ;                                        // Yes, wait some time
     ESP.restart() ;                                         // Reboot
   }
+  ledflash();
   // scanserial() ;                                            // Handle serial input
   // scandigital() ;                                           // Scan digital inputs
   //scanIR() ;                                                // See if IR input
@@ -4065,8 +3979,25 @@ void loop()
   handleVolPub() ;                                          // See if time to publish volume
   //chk_enc() ;                                               // Check rotary encoder functions
 
+  // unsigned long curmil=0;
+  
 }
 
+// flasing for connected indicator
+void ledflash (){
+  if (flasing_connection){
+    if (millis()-prevmil>5000){
+        digitalWrite(led_connnected_in, HIGH);
+    }
+    if (millis()-prevmil>5100){
+      digitalWrite(led_connnected_in, LOW);
+      if (  wifiMulti.run() != WL_CONNECTED ) {
+        ESP.restart();
+      }
+      prevmil=millis();
+    }
+  }
+}
 
 //**************************************************************************************************
 //                                    C H K H D R L I N E                                          *
@@ -4115,7 +4046,9 @@ void scan_content_length ( const char* metalinebf )
   }
 }
 
-
+String bitrateinfo="";
+String radioinfo2="";
+String oldradioinfo2="";
 //**************************************************************************************************
 //                                   H A N D L E B Y T E _ C H                                     *
 //**************************************************************************************************
@@ -4220,10 +4153,17 @@ void handlebyte_ch ( uint8_t b )
           String ct = metaline.substring ( 13 ) ;      // Set contentstype. Not used yet
           ct.trim() ;
           dbgprint ( "%s seen.", ct.c_str() ) ;
+          radioinfo2+="type : " +metaline.substring ( 19 )+"\n";
         }
+        if ( lcml.startsWith ( "icy-genre:" ))     // Line with "icy-genre: xxxx/yyy"
+        {
+         radioinfo2+="genre : " +metaline.substring(10)+"\n";
+        }
+        
         if ( lcml.startsWith ( "icy-br:" ) )
         {
           bitrate = metaline.substring(7).toInt() ;    // Found bitrate tag, read the bitrate
+          radioinfo2+="bitrate : "+metaline.substring(7)+ " kbps"+"\n";
           if ( bitrate == 0 )                          // For Ogg br is like "Quality 2"
           {
             bitrate = 87 ;                             // Dummy bitrate
@@ -4237,6 +4177,7 @@ void handlebyte_ch ( uint8_t b )
         {
           icyname = metaline.substring(9) ;            // Get station name
          
+          radioinfo2="";
           icyname.trim() ;                             // Remove leading and trailing spaces
          //tftset ( 1, icyname ) ;                      // Set screen segment bottom part
          stasiun=icyname;
@@ -4272,6 +4213,8 @@ void handlebyte_ch ( uint8_t b )
       }
       LFcount = 0 ;                                    // Reset double CRLF detection
     }
+    // oldradioinfo2=radioinfo2;
+    isplaying=true;
     return ;
   }
   if ( datamode == METADATA )                          // Handle next byte of metadata
@@ -4652,6 +4595,14 @@ const char* analyzeCmd ( const char* par, const char* val )
   strcpy ( reply, "Command accepted" ) ;              // Default reply
   argument = String ( par ) ;                         // Get the argument
   chomp ( argument ) ;                                // Remove comment and useless spaces
+  if (argument!=""){
+    if(tolocalap){
+
+    dbgprint("localAP timeout dismiss ");
+    oledshow(3,"Timeout dismissed!");
+    tolocalap=false;
+    }
+  }
   if ( argument.length() == 0 )                       // Lege commandline (comment)?
   {
     return reply ;                                    // Ignore
@@ -4943,6 +4894,7 @@ const char* analyzeCmd ( const char* par, const char* val )
       String allpreset="list\n";   
       String tmppreset="";
       for(int i=0; i<101; i++){
+        numOfPreset+=1;
            tmppreset=readhostfrompref(i).c_str();       //get station name 
           tmppreset+="\n";                              //add next station as newline
           int in=tmppreset.indexOf("#");                //get comment sign
