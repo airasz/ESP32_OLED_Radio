@@ -130,8 +130,8 @@
 #define VERSION "Sun, 10 June 2018 18:30:00 GMT"
 //
 // Define type of display.  See documentation.
-#define BLUETFT                        // Works also for RED TFT 128x160
-//#define OLED                         // 64x128 I2C OLED
+//#define BLUETFT                        // Works also for RED TFT 128x160
+#define OLED                         // 64x128 I2C OLED
 //#define DUMMYTFT                     // Dummy display
  //#define LCD1602I2C                   // LCD 1602 display with I2C backpack
 //
@@ -421,7 +421,7 @@ int tmppreset;
 int angka2=0;
 int tlrate=1;
 int pinleddummyload=32;
-bool startlisteningtouch=false;
+// bool startlisteningtouch=false;
 
 #define touch1 14 //14
 #define touch2 12  //13
@@ -1468,7 +1468,7 @@ if (angka2>tlrate){
   {
     timer10sec() ;                                // Yes, do 10 second procedure
     count10sec = 0 ;                              // Reset count
-   if(startlisteningtouch==0){startlisteningtouch=1;} // start to listening touch after 10 secs boot
+  //  if(startlisteningtouch==0){startlisteningtouch=1;} // start to listening touch after 10 secs boot
     
   }
   if ( ( count10sec % 10 ) == 0 )                 // One second over?
@@ -4769,11 +4769,13 @@ const char* analyzeCmd ( const char* par, const char* val )
   else if ( argument == "restart"){
     // ESP.restart();
 
+    sprintf ( reply, "Radio restarting" ) ;           // Format reply
     resetreq = true ; 
   }
   else if ( argument == "reboot"){
     // ESP.restart();
     
+    sprintf ( reply, "Radio restarting" ) ;           // Format reply
     resetreq = true ;
   }
   else if ( argument == "test" )                      // Test command
