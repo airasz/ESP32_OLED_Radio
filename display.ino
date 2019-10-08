@@ -90,15 +90,16 @@ switch (row) {
                           dsp_fillRect ( 0, 0,                             // clear sector 0,12,128,24 for new text
                           dsp_getwidth(), 8, BLACK ) ;    
                           //dsp_update();
+                          dsp_setTextColor ( WHITE ) ;                       // 
                           tftset(row,text);
                           break;
                         case 1:
-                        if(text!=prevtext1){
-                            
-                          dsp_fillRect ( 0, 8,                             // clear sector 0,12,128,24 for new text
-                          dsp_getwidth(), 16-8, BLACK ) ;    
-                          //dsp_update();
-                        }
+                          if(text!=prevtext1){
+                              
+                            dsp_fillRect ( 0, 8,                             // clear sector 0,12,128,24 for new text
+                            dsp_getwidth(), 16-8, BLACK ) ;    
+                            //dsp_update();
+                          }
                           prevtext1=text;
                           tftset(row,text);
                           break;
@@ -106,7 +107,12 @@ switch (row) {
                           dsp_fillRect ( 0, 16,                             // clear sector 0,12,128,24 for new text
                             dsp_getwidth(), 48-16, BLACK ) ;    
                         //  dsp_update();
+                          // dsp_setTextColor ( BLACK ) ;                       // Info in white
+                          // tftset(row,prevtext2);
+                          dsp_setTextColor ( BLUE) ;                       // Info in white
+                          dsp_update();
                           tftset(row,text);
+                          prevtext2=text;
                           break;
                         case 3:
 

@@ -1,0 +1,157 @@
+[
+  {
+    "Sourcefile": "",
+    "Include": "",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\cores\\esp32"
+  },
+  {
+    "Sourcefile": "",
+    "Include": "",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\variants\\esp32"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "PubSubClient.h",
+    "Includepath": "C:\\Users\\HGA\\Documents\\Arduino\\libraries\\pubsubclient\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "WiFiMulti.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "ESPmDNS.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\ESPmDNS\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "FS.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\FS\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "SD.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\SD\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "SPI.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\SPI\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "ArduinoOTA.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\ArduinoOTA\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "Update.h",
+    "Includepath": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\Update\\src"
+  },
+  {
+    "Sourcefile": "c:\\Users\\HGA\\Documents\\Arduino\\ESP32_OLED_Radio\\build_ESP32_OLED_Radio\\sketch\\ESP32_OLED_Radio.ino.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\Documents\\Arduino\\libraries\\pubsubclient\\src\\PubSubClient.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\ETH.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFi.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiAP.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiClient.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiGeneric.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiMulti.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiSTA.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiScan.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiServer.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\WiFi\\src\\WiFiUdp.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\ESPmDNS\\src\\ESPmDNS.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\FS\\src\\FS.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\FS\\src\\vfs_api.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\SD\\src\\SD.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\SD\\src\\sd_diskio.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\SD\\src\\sd_diskio_crc.c",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\SPI\\src\\SPI.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\ArduinoOTA\\src\\ArduinoOTA.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\HGA\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\libraries\\Update\\src\\Updater.cpp",
+    "Include": "",
+    "Includepath": ""
+  }
+]

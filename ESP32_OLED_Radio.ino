@@ -1301,11 +1301,9 @@ void listNetworks()
         break ;
       }
     }
-    encryption = WiFi.encryptionType ( i ) ;
-    dbgprint ( "%2d - %-25s Signal: %3d dBm, Encryption %4s, %s",
-               i + 1, WiFi.SSID(i).c_str(), WiFi.RSSI(i),
-               getEncryptionType ( encryption ),
-               acceptable ) ;
+    // encryption = WiFi.encryptionType ( i ) ;
+    dbgprint ( "%2d - %-25s Signal: %3d dBm",
+               i + 1, WiFi.SSID(i).c_str(), WiFi.RSSI(i)) ;
     // Remember this network for later use
     networks += WiFi.SSID(i) + String ( ", " ) ;        
   }
